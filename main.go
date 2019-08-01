@@ -8,15 +8,18 @@ import (
 )
 
 func main() {
+	// retrieve token
 	token, err := auth.GetToken()
 	var artistList []string
+	// retrieve artists from playlist songs
 	artistList, err = apicalls.GetArtists(token)
 
 	if err != nil {
 		panic(err)
 	}
+	// retrieve genres per artist
 	genreMap, err := apicalls.GetGenreMap(token, artistList)
 	for name, genres := range genreMap {
-		fmt.Printf("Artist: %s likes following genres: %s\n", name, genres)
+		fmt.Printf("Artist: %s likes following genres: %+q\n", name, genres)
 	}
 }

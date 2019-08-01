@@ -9,13 +9,13 @@ import (
 	"time"
 )
 
-// GenresData genres from spotify playlist
+// genresData is a struct to receive json data about artist genres
 type genresData struct {
 	Name   string   `json:"name"`
 	Genres []string `json:"genres"`
 }
 
-// GetGenreMap retrieves list of genres of a given artist list
+// GetGenreMap retrieves an array of genres per artist
 func GetGenreMap(token string, artistURLS []string) (map[string][]string, error) {
 	tokenHdr := "Bearer " + token
 	artistGenres := make(map[string][]string)
