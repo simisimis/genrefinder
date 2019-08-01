@@ -10,8 +10,10 @@ import (
 func main() {
 	token, err := auth.GetToken()
 	var artistList []string
-	if err == nil {
-		artistList, err = apicalls.GetArtists(token)
+	artistList, err = apicalls.GetArtists(token)
+
+	if err != nil {
+		panic(err)
 	}
 	for _, artist := range artistList {
 		fmt.Println(artist)
