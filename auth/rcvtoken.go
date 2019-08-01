@@ -28,7 +28,6 @@ func (spotify *AppSecrets) GetToken() string {
 
 	// retrieve base64 encoded app secrets
 	secret64 := fmt.Sprintf("Basic %s", spotify.getEncodedKeys())
-	fmt.Println(secret64)
 	// prepare to POST
 	client := &http.Client{
 		Timeout: 3 * time.Second,
@@ -52,12 +51,10 @@ func (spotify *AppSecrets) GetToken() string {
 		log.Println(err)
 	}
 	resp.Body.Close()
-	fmt.Println(string(rcvToken))
 
 	if err == nil {
 		json.Unmarshal(rcvToken, &spotify)
 	}
-	fmt.Println(spotify.AccessToken)
 	return spotify.AccessToken
 }
 
