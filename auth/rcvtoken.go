@@ -44,12 +44,14 @@ func GetToken() (string, error) {
 	}
 	resp.Body.Close()
 
-	var responseData map[string]interface{}
+	responseData := struct {
+		Token string `json:"access_token"`
+	}{}
 	json.Unmarshal(rcvToken, &responseData)
 	if err := json.Unmarshal(rcvToken, &responseData); err != nil {
 		return "", err
 	}
-	return responseData["access_token"].(string), nil
+	return responseData.Token, nil
 }
 
 func getEncodedKeys(id, secret string) string {
