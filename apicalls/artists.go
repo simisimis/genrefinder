@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
 
-// PlaylistData data from spotify playlist
-type PlaylistData struct {
+// playlistData data from spotify playlist
+type playlistData struct {
 	Href  string `json:"href"`
 	Items []struct {
 		Track struct {
@@ -33,21 +32,45 @@ type PlaylistData struct {
 	Total    int    `json:"total"`
 }
 
-// GetArtists retrieves a list of artists from a playlist
-func (songs *PlaylistData) GetArtists(token string) {
+// GetArtists retrieves list of artist from given playlist
+func GetArtists(token string) ([]string, error) {
+	offset := "0"
+	limit := "10"
+	playlist := "6zr6LLfSZCVr6lsReGXpL2"
+	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s/tracks?offset=%s&limit=%s", playlist, offset, limit)
+	tokenHdr := "Bearer " + token
+	queryMore := true
+	var artists []string
+	for queryMore {
+		songs, err := getSongs(tokenHdr, url)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, v := range songs.Items {
+			for _, artist := range v.Track.Artists {
+				artists = append(artists, artist.Href)
+			}
+		}
+		url = songs.Next
+		if songs.Next == "" {
+			queryMore = false
+		}
+	}
+	return artists, nil
+}
+
+// getSongs retrieves songs from a playlist
+func getSongs(tokenHdr, url string) (playlistData, error) {
+
 	client := &http.Client{
 		Timeout: 3 * time.Second,
 	}
-	tokenHdr := "Bearer " + token
-	playlist := "6zr6LLfSZCVr6lsReGXpL2"
-	offset := "0"
-	limit := "10"
-	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s/tracks?offset=%s&limit=%s", playlist, offset, limit)
 	contentTypeHdr := fmt.Sprint("application/json")
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatalln(err)
+		return playlistData{}, err
 	}
 	req.Header.Add("Accept", contentTypeHdr)
 	req.Header.Add("Content-Type", contentTypeHdr)
@@ -55,20 +78,19 @@ func (songs *PlaylistData) GetArtists(token string) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalln(err)
+		return playlistData{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		return playlistData{}, err
 	}
-	json.Unmarshal(body, &songs)
-	fmt.Println(songs.Href, songs.Next, songs.Total)
-	for _, v := range songs.Items {
-		fmt.Println(v.Track.Href)
-		for _, artist := range v.Track.Artists {
-			fmt.Println(artist.Name)
-		}
+	songs := playlistData{}
+
+	if err := json.Unmarshal(body, &songs); err != nil {
+		return playlistData{}, err
 	}
+	return songs, nil
+
 }

@@ -47,7 +47,6 @@ func GetToken() (string, error) {
 	responseData := struct {
 		Token string `json:"access_token"`
 	}{}
-	json.Unmarshal(rcvToken, &responseData)
 	if err := json.Unmarshal(rcvToken, &responseData); err != nil {
 		return "", err
 	}
