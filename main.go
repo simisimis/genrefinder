@@ -6,8 +6,9 @@ import (
 )
 
 func main() {
-	spotify := &auth.AppSecrets{}
-	token := spotify.GetToken()
-	songs := &apicalls.PlaylistData{}
-	songs.GetArtists(token)
+	token, err := auth.GetToken()
+	if err == nil {
+		songs := &apicalls.PlaylistData{}
+		songs.GetArtists(token)
+	}
 }

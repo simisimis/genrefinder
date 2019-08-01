@@ -46,12 +46,13 @@ func (songs *PlaylistData) GetArtists(token string) {
 	contentTypeHdr := fmt.Sprint("application/json")
 
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Add("Accept", contentTypeHdr)
-	req.Header.Add("Content-Type", contentTypeHdr)
-	req.Header.Add("Authorization", tokenHdr)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	req.Header.Add("Accept", contentTypeHdr)
+	req.Header.Add("Content-Type", contentTypeHdr)
+	req.Header.Add("Authorization", tokenHdr)
+
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalln(err)

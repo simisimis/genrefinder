@@ -7,27 +7,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
 )
 
-// AppSecrets holds login details
-type AppSecrets struct {
-	ClientID     string
-	ClientSecret string
-	AccessToken  string `json:"access_token"`
-}
-
 // GetToken posts to spotify to retrieve token
-func (spotify *AppSecrets) GetToken() string {
-	spotify.ClientID = os.Getenv("SPOTIFY_CLIENT")
-	spotify.ClientSecret = os.Getenv("SPOTIFY_SECRET")
+func GetToken() (string, error) {
+	ClientID := os.Getenv("SPOTIFY_CLIENT")
+	ClientSecret := os.Getenv("SPOTIFY_SECRET")
 
 	// retrieve base64 encoded app secrets
-	secret64 := fmt.Sprintf("Basic %s", spotify.getEncodedKeys())
+	secret64 := fmt.Sprintf("Basic %s", getEncodedKeys(ClientID, ClientSecret))
 	// prepare to POST
 	client := &http.Client{
 		Timeout: 3 * time.Second,
@@ -37,28 +29,30 @@ func (spotify *AppSecrets) GetToken() string {
 
 	// Create a POST request to retrieve token
 	req, err := http.NewRequest("POST", "https://accounts.spotify.com/api/token", bytes.NewBufferString(data.Encode()))
+	if err != nil {
+		return "", err
+	}
 	req.Header.Add("Authorization", secret64)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	if err != nil {
-		log.Println(err)
-	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
 	rcvToken, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
 	resp.Body.Close()
 
-	if err == nil {
-		json.Unmarshal(rcvToken, &spotify)
+	var responseData map[string]interface{}
+	json.Unmarshal(rcvToken, &responseData)
+	if err := json.Unmarshal(rcvToken, &responseData); err != nil {
+		return "", err
 	}
-	return spotify.AccessToken
+	return responseData["access_token"].(string), nil
 }
 
-func (spotify *AppSecrets) getEncodedKeys() string {
-	data := fmt.Sprintf("%v:%v", spotify.ClientID, spotify.ClientSecret)
+func getEncodedKeys(id, secret string) string {
+	data := fmt.Sprintf("%v:%v", id, secret)
 	return base64.StdEncoding.EncodeToString([]byte(data))
 }
