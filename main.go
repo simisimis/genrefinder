@@ -15,7 +15,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	for _, artist := range artistList {
-		fmt.Println(artist)
+	genreMap, err := apicalls.GetGenreMap(token, artistList)
+	for name, genres := range genreMap {
+		fmt.Printf("Artist: %s likes following genres: %s\n", name, genres)
 	}
 }
