@@ -1,8 +1,8 @@
 package main
 
 import (
-	"genrefinder/apicalls"
-	"genrefinder/auth"
+	"github.com/simisimis/genrefinder/apicalls"
+	"github.com/simisimis/genrefinder/auth"
 )
 
 func main() {
