@@ -2,9 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"strings"
 
 	"github.com/simisimis/genrefinder/apicalls"
 	"github.com/simisimis/genrefinder/auth"
@@ -12,7 +10,7 @@ import (
 
 type genreDesc struct {
 	repeats int
-	artists map[string]bool
+	artists []string
 }
 
 func main() {
@@ -26,40 +24,26 @@ func main() {
 		panic(err)
 	}
 	// retrieve genres per artist
-	resultGenreMap, err := apicalls.GetGenreMap(token, artistList)
+	resultGenreData, err := apicalls.GetGenreMap(token, artistList)
 	if err != nil {
 		panic(err)
 	}
 
-	genresMap := make(map[string]*genreDesc)
+	genresMap := make(map[string]map[string]interface{})
 
-	for name, genres := range resultGenreMap {
+	for name, genres := range resultGenreData {
 		for _, genre := range genres {
 			if _, ok := genresMap[genre]; ok {
-				genresMap[genre].repeats++
-				genresMap[genre].artists[name] = true
+				genresMap[genre]["repeats"] = genresMap[genre]["repeats"].(int) + 1
+				genresMap[genre]["artists"] = append(genresMap[genre]["artists"].([]string), name)
 			} else {
-				genresMap[genre] = &genreDesc{1, map[string]bool{name: true}}
+				genresMap[genre] = map[string]interface{}{"repeats": 1, "artists": []string{name}}
 			}
 
 		}
 	}
-	// for genre, desc := range genresMap {
-	// 	var artistList []string
-	// 	for artist := range desc.artists {
-	// 		artistList = append(artistList, artist)
-	// 	}
-	// 	fmt.Printf("genre: %s, times repeats:%v, artists playing: %+q \n", genre, desc.repeats, artistList)
-	// }
-	printRes := make(map[string]string)
-	for genre, desc := range genresMap {
-		var artistList []string
-		for artist := range desc.artists {
-			artistList = append(artistList, artist)
-		}
-		printRes[genre] = fmt.Sprintf("{ repeats:%d, artists:[%s]", desc.repeats, strings.Join(artistList, ", "))
-	}
-	genresJSON, err := json.Marshal(printRes)
+
+	genresJSON, err := json.Marshal(genresMap)
 	if err != nil {
 		panic(err)
 	}

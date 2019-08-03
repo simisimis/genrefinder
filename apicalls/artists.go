@@ -35,7 +35,7 @@ type playlistData struct {
 // GetArtists retrieves list of artist from given playlist
 func GetArtists(token string) ([]string, error) {
 	offset := "0"
-	limit := "10"
+	limit := "50"
 	playlist := "6zr6LLfSZCVr6lsReGXpL2"
 	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s/tracks?offset=%s&limit=%s", playlist, offset, limit)
 	tokenHdr := "Bearer " + token
