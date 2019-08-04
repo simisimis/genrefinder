@@ -9,14 +9,15 @@ import (
 )
 
 type genreDesc struct {
-	repeats int
-	artists []string
+	Repeats int      `json:"repeats"`
+	Artists []string `json:"artists"`
 }
 
 func main() {
 	// retrieve token
 	token, err := auth.GetToken()
 	var artistList []string
+
 	// retrieve artists from playlist songs
 	artistList, err = apicalls.GetArtists(token)
 
@@ -29,15 +30,15 @@ func main() {
 		panic(err)
 	}
 
-	genresMap := make(map[string]map[string]interface{})
+	genresMap := map[string]*genreDesc{}
 
-	for name, genres := range resultGenreData {
+	for artist, genres := range resultGenreData {
 		for _, genre := range genres {
 			if _, ok := genresMap[genre]; ok {
-				genresMap[genre]["repeats"] = genresMap[genre]["repeats"].(int) + 1
-				genresMap[genre]["artists"] = append(genresMap[genre]["artists"].([]string), name)
+				genresMap[genre].Repeats++
+				genresMap[genre].Artists = append(genresMap[genre].Artists, artist)
 			} else {
-				genresMap[genre] = map[string]interface{}{"repeats": 1, "artists": []string{name}}
+				genresMap[genre] = &genreDesc{1, []string{artist}}
 			}
 
 		}
