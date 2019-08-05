@@ -30,9 +30,21 @@ func main() {
 		panic(err)
 	}
 
+	genresJSON, err := prepareJSON(resultGenreData)
+	if err != nil {
+		panic(err)
+	}
+
+	err = ioutil.WriteFile("genres_out.json", genresJSON, 0644)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func prepareJSON(artistINFO map[string][]string) ([]byte, error) {
 	genresMap := map[string]*genreDesc{}
 
-	for artist, genres := range resultGenreData {
+	for artist, genres := range artistINFO {
 		for _, genre := range genres {
 			if _, ok := genresMap[genre]; ok {
 				genresMap[genre].Repeats++
@@ -43,13 +55,5 @@ func main() {
 
 		}
 	}
-
-	genresJSON, err := json.Marshal(genresMap)
-	if err != nil {
-		panic(err)
-	}
-	err = ioutil.WriteFile("genres_out.json", genresJSON, 0644)
-	if err != nil {
-		panic(err)
-	}
+	return json.Marshal(genresMap)
 }
