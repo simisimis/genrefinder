@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"io/ioutil"
 
+	"github.com/manifoldco/promptui"
 	"github.com/simisimis/genrefinder/apicalls"
 	"github.com/simisimis/genrefinder/auth"
 )
@@ -14,12 +17,39 @@ type genreDesc struct {
 }
 
 func main() {
+	var username string
+	flag.StringVar(&username, "u", "", "Spotify username")
+	flag.Parse()
+	if username == "" {
+		err := fmt.Errorf("Program expects spotify username as a flag")
+		panic(err)
+	}
 	// retrieve token
 	token, err := auth.GetToken()
-	var artistList []string
+
+	printPlaylists, err := apicalls.GetPlaylists(token, username)
+	if err != nil {
+		panic(err)
+	}
+
+	plistKeys := make([]string, 0, len(printPlaylists))
+	for plistName := range printPlaylists {
+		plistKeys = append(plistKeys, plistName)
+	}
+	prompt := promptui.Select{
+		Label: "Select playlist:",
+		Items: plistKeys,
+		Size:  8,
+	}
+
+	_, plistSelect, err := prompt.Run()
+	if err != nil {
+		panic(err)
+	}
 
 	// retrieve artists from playlist songs
-	artistList, err = apicalls.GetArtists(token)
+	var artistList []string
+	artistList, err = apicalls.GetArtists(token, printPlaylists[plistSelect])
 
 	if err != nil {
 		panic(err)
