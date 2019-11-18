@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 
 	"github.com/manifoldco/promptui"
-	"github.com/simisimis/genrefinder/apicalls"
 	"github.com/simisimis/genrefinder/auth"
+	"github.com/simisimis/genrefinder/spotify"
 )
 
 type genreDesc struct {
@@ -27,14 +27,14 @@ func main() {
 	// retrieve token
 	token, err := auth.GetToken()
 
-	printPlaylists, err := apicalls.GetPlaylists(token, username)
+	printPlaylists, err := spotify.GetPlaylists(token, username)
 	if err != nil {
 		panic(err)
 	}
 
 	plistKeys := make([]string, 0, len(printPlaylists))
-	for plistName := range printPlaylists {
-		plistKeys = append(plistKeys, plistName)
+	for name := range printPlaylists {
+		plistKeys = append(plistKeys, name)
 	}
 	prompt := promptui.Select{
 		Label: "Select playlist:",
@@ -49,13 +49,13 @@ func main() {
 
 	// retrieve artists from playlist songs
 	var artistList []string
-	artistList, err = apicalls.GetArtists(token, printPlaylists[plistSelect])
+	artistList, err = spotify.GetArtists(token, printPlaylists[plistSelect])
 
 	if err != nil {
 		panic(err)
 	}
 	// retrieve genres per artist
-	resultGenreData, err := apicalls.GetGenreMap(token, artistList)
+	resultGenreData, err := spotify.GetGenreMap(token, artistList)
 	if err != nil {
 		panic(err)
 	}

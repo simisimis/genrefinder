@@ -1,4 +1,5 @@
-package apicalls
+// Package spotify is for storing all the different calls to spotify apis
+package spotify
 
 import (
 	"encoding/json"
