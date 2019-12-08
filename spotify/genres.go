@@ -16,21 +16,23 @@ type genresData struct {
 }
 
 // GetGenreMap retrieves an array of genres per artist
-func GetGenreMap(token string, artistURLS []string) (map[string][]string, error) {
+func GetGenreMap(token string, artists map[string]Artist) (map[string]Artist, error) {
 	tokenHdr := "Bearer " + token
-	artistGenres := make(map[string][]string)
-	for _, apiURL := range artistURLS {
-		tempGenres, err := getGenres(tokenHdr, apiURL)
+
+	for id, artist := range artists {
+		genreList, err := getGenres2(tokenHdr, artist.Href)
 		if err != nil {
-			return nil, err
+			return artists, err
 		}
-		artistGenres[tempGenres.Name] = tempGenres.Genres
+		fmt.Println(genreList)
+		artist.Genres = genreList
+		artists[id] = artist
 	}
-	return artistGenres, nil
+	return artists, nil
 }
 
-// getGenres retrieves genres for a given artist
-func getGenres(tokenHdr, url string) (genresData, error) {
+// copy
+func getGenres(tokenHdr, url string) ([]string, error) {
 
 	client := &http.Client{
 		Timeout: 3 * time.Second,
@@ -39,7 +41,7 @@ func getGenres(tokenHdr, url string) (genresData, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return genresData{}, err
+		return []string{}, err
 	}
 	req.Header.Add("Accept", contentTypeHdr)
 	req.Header.Add("Content-Type", contentTypeHdr)
@@ -47,19 +49,19 @@ func getGenres(tokenHdr, url string) (genresData, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return genresData{}, err
+		return []string{}, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return genresData{}, err
+		return []string{}, err
 	}
 	genres := genresData{}
 
 	if err := json.Unmarshal(body, &genres); err != nil {
-		return genresData{}, err
+		return []string{}, err
 	}
-	return genres, nil
+	return genres.Genres, nil
 
 }

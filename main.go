@@ -1,10 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/manifoldco/promptui"
 	"github.com/simisimis/genrefinder/auth"
@@ -46,44 +44,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	artistList := make(map[string]spotify.Artist)
+	artistList, err = spotify.GetArtists(token, printPlaylists[plistSelect], artistList)
 
-	// retrieve artists from playlist songs
-	var artistList []string
-	artistList, err = spotify.GetArtists(token, printPlaylists[plistSelect])
-
-	if err != nil {
-		panic(err)
-	}
-	// retrieve genres per artist
 	resultGenreData, err := spotify.GetGenreMap(token, artistList)
-	if err != nil {
-		panic(err)
+	for _, artist := range resultGenreData {
+		fmt.Printf("artistID: %s,\n genres: %s,\n href: %s,\n name: %s,\n playlists: %s\n", artist.ID, artist.Genres, artist.Href, artist.Name, artist.Playlist)
 	}
-
-	genresJSON, err := prepareJSON(resultGenreData)
-	if err != nil {
-		panic(err)
-	}
-
-	err = ioutil.WriteFile("genres_out.json", genresJSON, 0644)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func prepareJSON(artistINFO map[string][]string) ([]byte, error) {
-	genresMap := map[string]*genreDesc{}
-
-	for artist, genres := range artistINFO {
-		for _, genre := range genres {
-			if _, ok := genresMap[genre]; ok {
-				genresMap[genre].Repeats++
-				genresMap[genre].Artists = append(genresMap[genre].Artists, artist)
-			} else {
-				genresMap[genre] = &genreDesc{1, []string{artist}}
-			}
-
-		}
-	}
-	return json.Marshal(genresMap)
 }

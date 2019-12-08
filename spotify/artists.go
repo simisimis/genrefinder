@@ -9,6 +9,15 @@ import (
 	"time"
 )
 
+// Artist information about artist
+type Artist struct {
+	ID       string              `json:"id"`
+	Genres   []string            `json:"genres"`
+	Href     string              `json:"href"`
+	Name     string              `json:"name"`
+	Playlist map[string]struct{} `json:"playlist"`
+}
+
 // playlistData data from spotify playlist
 type playlistData struct {
 	Href  string `json:"href"`
@@ -32,14 +41,14 @@ type playlistData struct {
 	Total    int    `json:"total"`
 }
 
-// GetArtists retrieves list of artist from given playlist
-func GetArtists(token, playlist string) ([]string, error) {
+// GetArtists2 retrieves list of artist from given playlist
+func GetArtists(token, playlist string, artists map[string]Artist) (map[string]Artist, error) {
 	offset := "0"
 	limit := "50"
 	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s/tracks?offset=%s&limit=%s", playlist, offset, limit)
 	tokenHdr := "Bearer " + token
 	queryMore := true
-	var artists []string
+
 	for queryMore {
 		songs, err := getSongs(tokenHdr, url)
 		if err != nil {
@@ -48,7 +57,20 @@ func GetArtists(token, playlist string) ([]string, error) {
 
 		for _, v := range songs.Items {
 			for _, artist := range v.Track.Artists {
-				artists = append(artists, artist.Href)
+				var currentArtist Artist
+				currentArtist, found := artists[artist.ID]
+				if !found {
+					currentArtist = Artist{
+						ID:       artist.ID,
+						Name:     artist.Name,
+						Href:     artist.Href,
+						Playlist: make(map[string]struct{}),
+						Genres:   []string{},
+					}
+				}
+
+				currentArtist.Playlist[playlist] = struct{}{}
+				artists[artist.ID] = currentArtist
 			}
 		}
 		url = songs.Next
@@ -90,6 +112,6 @@ func getSongs(tokenHdr, url string) (playlistData, error) {
 	if err := json.Unmarshal(body, &songs); err != nil {
 		return playlistData{}, err
 	}
-	return songs, nil
 
+	return songs, nil
 }
