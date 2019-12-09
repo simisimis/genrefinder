@@ -6,10 +6,11 @@ You can create an app in spotify developers dashboard.
 
 Currently genrefinder:
 * retrieves token
-* makes a call to a hardcoded playlist to get a list of artists.
-* retrieves an array of genres per artist.
+* uses a playlist that user chooses through select menu
+* retrieves a map of artists.
+* enriches artists dictionary with a name of playlist artist was found in.
+* adds genres artist is playing in to artists dictionary
 
 TODO:
-* input/select playlist
-* count them
-* export them
+* loop over all playlists of provided username
+* implement bulk upload to elasticsearch

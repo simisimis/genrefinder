@@ -20,7 +20,7 @@ func GetGenreMap(token string, artists map[string]Artist) (map[string]Artist, er
 	tokenHdr := "Bearer " + token
 
 	for id, artist := range artists {
-		genreList, err := getGenres2(tokenHdr, artist.Href)
+		genreList, err := getGenres(tokenHdr, artist.Href)
 		if err != nil {
 			return artists, err
 		}
@@ -31,7 +31,7 @@ func GetGenreMap(token string, artists map[string]Artist) (map[string]Artist, er
 	return artists, nil
 }
 
-// copy
+// getGenres retrieves a list of genres for given artist
 func getGenres(tokenHdr, url string) ([]string, error) {
 
 	client := &http.Client{
