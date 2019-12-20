@@ -34,7 +34,7 @@ func GetPlaylists(token, user string) (map[string]string, error) {
 		}
 
 		for _, playLST := range playlists.Items {
-			playlistMAP[playLST.Name] = playLST.ID
+			playlistMAP[playLST.ID] = playLST.Name
 		}
 		url = playlists.Next
 		if playlists.Next == "" {

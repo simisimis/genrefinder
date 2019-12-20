@@ -4,10 +4,14 @@ package spotify
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 )
+
+var log = logrus.WithField("pkg", "genres")
 
 // genresData is a struct to receive json data about artist genres
 type genresData struct {
@@ -21,10 +25,10 @@ func GetGenreMap(token string, artists map[string]Artist) (map[string]Artist, er
 
 	for id, artist := range artists {
 		genreList, err := getGenres(tokenHdr, artist.Href)
+		//		time.Sleep(5 * time.Millisecond)
 		if err != nil {
 			return artists, err
 		}
-		fmt.Println(genreList)
 		artist.Genres = genreList
 		artists[id] = artist
 	}
@@ -48,6 +52,15 @@ func getGenres(tokenHdr, url string) ([]string, error) {
 	req.Header.Add("Authorization", tokenHdr)
 
 	resp, err := client.Do(req)
+	// Check is rate-limit has been triggered and sleep for time required
+	if resp.StatusCode == 429 {
+		secondsWait, _ := strconv.Atoi(resp.Header["Retry-After"][0])
+		log.Printf("Sleeping %d seconds because of rate limit", secondsWait)
+		time.Sleep(time.Duration(secondsWait) * time.Second)
+	}
+	// Add little pause between calls
+	time.Sleep(5 * time.Millisecond)
+
 	if err != nil {
 		return []string{}, err
 	}

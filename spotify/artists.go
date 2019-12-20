@@ -41,11 +41,11 @@ type playlistData struct {
 	Total    int    `json:"total"`
 }
 
-// GetArtists2 retrieves list of artist from given playlist
-func GetArtists(token, playlist string, artists map[string]Artist) (map[string]Artist, error) {
+// GetArtists retrieves list of artist from given playlist
+func GetArtists(token, playlistID string, playlistName string, artists map[string]Artist) (map[string]Artist, error) {
 	offset := "0"
 	limit := "50"
-	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s/tracks?offset=%s&limit=%s", playlist, offset, limit)
+	url := fmt.Sprintf("https://api.spotify.com/v1/playlists/%s/tracks?offset=%s&limit=%s", playlistID, offset, limit)
 	tokenHdr := "Bearer " + token
 	queryMore := true
 
@@ -69,7 +69,7 @@ func GetArtists(token, playlist string, artists map[string]Artist) (map[string]A
 					}
 				}
 
-				currentArtist.Playlist[playlist] = struct{}{}
+				currentArtist.Playlist[playlistName] = struct{}{}
 				artists[artist.ID] = currentArtist
 			}
 		}
