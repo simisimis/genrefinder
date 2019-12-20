@@ -15,11 +15,68 @@ Currently genrefinder:
 * adds genres artist is playing in to artists map
 * does a bulk upload to elasticsearch server running on http://localhost:9200
 
-### Screenshots
-![Alt text](/screenshots/20-12-19_09_05_scrot.png?raw=true "Kibana screenshot")
-![Alt text](/screenshots/20-12-19_16_00_scrot.png?raw=true "genrefinder in action")
-
 NOTE: elasticsearch index name and host details are hardcoded in the code
 
-TODO:
-* add elasticsearch commands used to create indexes, aliases, mappings
+### Screenshots
+Kibana
+![Alt text](/screenshots/20-12-19_09_05_scrot.png?raw=true "Kibana screenshot")
+term
+![Alt text](/screenshots/20-12-19_16_00_scrot.png?raw=true "genrefinder in action")
+
+```
+DELETE artists-18122019
+
+PUT artists-18122019
+{
+  "settings": {
+    "number_of_replicas": 0
+  }
+}
+
+POST _aliases
+{
+  "actions": [
+    {
+      "add": {
+        "index": "artists-18122019",
+        "alias": "artists"
+      }
+    }
+  ]
+}
+
+PUT artists/_mapping
+{
+  "properties": {
+    "artist": {
+      "type": "text",
+      "analyzer":"standard",
+          "fielddata":true,
+      "fields": {
+        "raw": {
+          "type": "keyword"
+        }
+      }
+    },
+    "genres": {
+      "type": "text",
+      "analyzer":"standard",
+      "fielddata":true,
+      "fields": {
+        "raw": {
+          "type": "keyword"
+        }
+      }
+    },
+    "playlists": {
+      "type": "text",
+      "analyzer":"standard",
+      "fielddata":true,
+      "fields": {
+        "raw": {
+          "type": "keyword"
+        }
+      }
+    }
+  }
+}```
