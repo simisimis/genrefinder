@@ -6,9 +6,9 @@ You can create an app in spotify developers dashboard.
 
 Currently genrefinder:
 * retrieves token
- Scenario1(default):
+  Scenario1(default):
 * Goes through all provided user public playlists
- Scenario2:
+  Scenario2:
 * Uses a playlist that user chooses through select menu
 * generates a map of artists.
 * enriches artists map with names of playlists artist was found in.
