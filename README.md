@@ -79,4 +79,5 @@ PUT artists/_mapping
       }
     }
   }
-}```
+}
+```
